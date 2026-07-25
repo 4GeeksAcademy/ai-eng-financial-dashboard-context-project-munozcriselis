@@ -49,6 +49,23 @@ backend:
     - ALLOWED_ORIGINS=http://localhost:5173
 ```
 
+## Criterios de verificación
+
+| Criterio | Método | Automatizable |
+|----------|--------|--------------|
+| `allow_origins` no contiene `"*"` | Buscar `allow_origins=["*"]` en `main.py` | ✅ ESLint o grep en CI |
+| `ALLOWED_ORIGINS` se lee de entorno | Verificar `os.getenv("ALLOWED_ORIGINS", ...)` presente | ❌ Revisión manual |
+| No hay metodos inseguros (PUT, DELETE, PATCH) | Buscar `allow_methods=["*"]` | ✅ grep en CI |
+| Comprobación: `curl -H "Origin: https://evil.com" -I http://localhost:8000/health` no retorna `Access-Control-Allow-Origin: *` | Test manual o test de integración | ✅ Script en CI |
+
+## Referencias cruzadas
+- **Memory bank**: `product-overview.md` sección 5 (Decisión #1 de gobernanza)
+- **Memory bank**: `current-status.md` brecha B-1
+- **Contrastar con**: `security-debug-mode.md` (ambas son reglas de seguridad bloqueantes)
+
+## Nota de gobernanza
+En un proyecto educativo, CORS `*` es tolerable para desarrollo local. Pero este repositorio es un fork base — cualquier estudiante que deploye a producción debe cambiar esto primero. La regla existe para que el agente de IA lo señale automáticamente.
+
 ## Razón
 La política CORS por defecto debe ser restrictiva (`deny all`) y solo abrir explícitamente los orígenes necesarios. Esto es especialmente importante cuando `allow_credentials=True` está habilitado, ya que permite cookies y headers de autenticación.
 

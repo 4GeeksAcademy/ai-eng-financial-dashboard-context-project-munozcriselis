@@ -59,13 +59,31 @@ export class ErrorBoundary extends Component<Props, State> {
 
 2. Envolver secciones en `App.tsx`:
 ```tsx
-<ErrorBoundary>
-  <IncomeOutcomeChart data={monthlyData} loading={loading} />
+<ErrorBoundary fallback={<p>Failed to load KPIs</p>}>
+  <KPIRow metrics={metrics} loading={loading} />
 </ErrorBoundary>
-<ErrorBoundary>
+<ErrorBoundary fallback={<p>Failed to load charts</p>}>
+  <IncomeOutcomeChart data={monthlyData} loading={loading} />
   <ProfitPercentChart data={monthlyData} loading={loading} />
 </ErrorBoundary>
 ```
+
+## Criterios de verificación
+
+| Criterio | Método | Automatizable |
+|----------|--------|--------------|
+| Existe componente `ErrorBoundary` o similar | Buscar `class ErrorBoundary` o `getDerivedStateFromError` | ✅ grep |
+| `App.tsx` envuelve secciones con `<ErrorBoundary>` | Buscar `<ErrorBoundary` en `App.tsx` | ✅ grep |
+| Cada sección independiente tiene su propio boundary | Verificar que KPIRow y charts tienen boundaries separados | ❌ Revisión manual |
+| Test: forzar error en un child y verificar que el resto del dashboard sigue funcionando | Simular error en un componente | ✅ Test unitario |
+
+## Referencias cruzadas
+- **Memory bank**: `current-status.md` brecha B-6
+- **Memory bank**: `product-overview.md` sección 4.2 (ningún componente tiene tests)
+- **Regla relacionada**: `frontend-error-handling.md` — ambas forman la capa de resiliencia del FE
+
+## Nota de gobernanza
+Sin Error Boundaries, un error de renderizado en cualquier componente (ej: Recharts recibe datos malformados) colapsa todo el dashboard. Con boundaries, el error se aísla y el resto de la UI sigue funcionando. Es una práctica estándar en React desde v16.
 
 ## Razón
 Los Error Boundaries implementan el patrón de "fallback graceful". Si una gráfica falla, las demás secciones del dashboard siguen funcionando. El usuario ve un mensaje de error localizado en vez de una pantalla blanca.

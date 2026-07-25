@@ -48,13 +48,22 @@ Luego en cada endpoint:
 def get_metrics(...) -> list[FinancialMovement]:
     movements = get_movements()  # ← Reutiliza cache
     filtered = filter_movements(movements, ...)
-    return ensure_chronological_order(filtered)
 ```
 
-## Razón
-Aunque con datos mock el impacto es bajo, este patrón establece una base correcta para cuando se conecte a una fuente de datos real (base de datos, API externa). Regenerar datos en cada request es un anti-patrón que escala mal.
+## Criterios de verificación
 
-## Cómo verificar que se cumple
-- `generate_mock_movements()` solo debe llamarse una vez al iniciar la app
-- Los endpoints deben llamar a una función que lea del cache, no regenerar datos
-- No debe haber llamadas a `generate_mock_movements(seed=42)` dentro de funciones de endpoint
+| Criterio | Método | Automatizable |
+|----------|--------|--------------|
+| Ningún endpoint llama `generate_mock_movements()` directamente | Buscar `generate_mock_movements(seed=42)` fuera de la función cache | ✅ grep en CI |
+| Existe una función `get_movements()` o similar que cachea | Buscar definición de variable global o `@lru_cache` | ✅ grep |
+| La cache se construye lazy (al primer request) | No debe haber llamada en import time | ❌ Revisión manual |
+| Test: 2 requests seguidos retornan el mismo objeto (misma referencia) | `movements1 is movements2` en test | ✅ Test unitario |
+
+## Referencias cruzadas
+- **Memory bank**: `current-status.md` brecha B-3
+- **Memory bank**: `current-status.md` Fase 1 (Seguridad y rendimiento)
+- **Memory bank**: `tech-stack.md` sección 1.1 (dependencias backend sin version pin)
+- **Regla relacionada**: `backend-dry-filters.md` — ambas mejoran rendimiento y mantenibilidad del backend
+
+## Nota de gobernanza
+La regeneración en cada request es el problema de rendimiento #1 del proyecto. Con ~360 objetos × 9 endpoints = 3,240 objetos por página, un simple cache module-level reduce esto a 360 objetos total. No requiere Redis ni infraestructura externa.

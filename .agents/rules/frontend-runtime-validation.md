@@ -71,3 +71,20 @@ La validación en runtime protege contra:
 - `response.json()` no debe retornarse directamente sin pasar por una validación
 - Debe existir al menos una función type guard para `FinancialMovement`
 - Si la respuesta no cumple el contrato, debe lanzarse un error claro
+
+## Criterios de verificación
+
+| Criterio | Método | Automatizable |
+|----------|--------|--------------|
+| `fetchFinancialData()` aplica validación antes de retornar | Buscar `isValidMovement` o `MovementSchema` o similar | ✅ grep |
+| Los tipos TypeScript se mantienen sincronizados con la validación | Verificar que `financial-types.ts` tenga los mismos campos | ❌ Revisión manual |
+| Si la API cambia, el test de validación falla | Test que pasa datos inválidos y espera error | ✅ Test unitario |
+| No hay `response.json() as FinancialMovement[]` sin validación previa | Buscar `as FinancialMovement` en archivos ts/tsx | ✅ grep |
+
+## Referencias cruzadas
+- **Memory bank**: `current-status.md` brecha B-8
+- **Regla relacionada**: `frontend-error-handling.md` — validación + manejo granular de errores
+- **Regla relacionada**: `frontend-dynamic-data.md` — ambas mejoran integridad de datos en FE
+
+## Nota de gobernanza
+TypeScript solo valida en compilación. En runtime, `response.json()` devuelve `any`. Sin validación, un cambio de schema en backend (ej: renombrar `create_date` a `date`) pasa desapercibido hasta que la UI muestra datos vacíos o NaN. La validación runtime es el contrato que TypeScript no puede ofrecer.

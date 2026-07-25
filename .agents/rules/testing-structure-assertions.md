@@ -60,9 +60,21 @@ assert len(movements) == 360
 ```
 
 ## Razón
-Tests que dependen de valores exactos de datos mock son frágiles. Cuando se cambia la generación de datos (ej: ajustar distribución, agregar meses), los tests fallan sin que haya un bug real. Esto genera "test fatigue" yreduce la confianza en la suite de testing.
+Tests que dependen de valores exactos de datos mock son frágiles. Cuando se cambia la generación de datos (ej: ajustar distribución, agregar meses), los tests fallan sin que haya un bug real. Esto genera "test fatigue" y reduce la confianza en la suite de testing.
 
-## Cómo verificar que se cumple
-- No debe haber `assert len(x) == N` donde N es un número hardcodeado de registros mock
-- Las aserciones deben usar `>=`, `>`, `<=` o validar propiedades estructurales
-- Si se necesita validar cantidad, debe ser un mínimo razonable, no un valor exacto
+## Criterios de verificación
+
+| Criterio | Método | Automatizable |
+|----------|--------|--------------|
+| Ningún test usa `assert len(...) == <número exacto>` | Buscar `assert len(.*) == \d+` en tests | ✅ grep con regex |
+| Los tests validan tipos de datos y estructura | Buscar `assert isinstance` o `assert hasattr` en tests | ✅ grep |
+| Los tests validan rangos razonables | Buscar `>=`, `>`, `<`, `<=` en assertions | ✅ grep |
+| Test de mutación: cambiar cantidad no rompe test | Cambiar parámetro en mock data y ejecutar tests | ✅ Script CI |
+
+## Referencias cruzadas
+- **Memory bank**: `current-status.md` brecha B-10
+- **Memory bank**: `current-status.md` fase 2 (Mantenibilidad)
+- **Regla relacionada**: `testing-component-rendering.md` — ambas buscan tests más robustos
+
+## Nota de gobernanza
+Un test que falla por cambios en datos mock, no por errores en lógica, es un falso positivo. Los tests deben ser resistentes a cambios en datos de entrada para que fallen solo cuando el comportamiento cambia. Esto es especialmente importante en proyectos educativos donde los datos mock pueden variar entre forks.

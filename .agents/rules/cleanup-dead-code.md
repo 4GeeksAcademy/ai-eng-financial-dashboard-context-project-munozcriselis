@@ -48,6 +48,23 @@ El código muerto:
 - Confunde a desarrolladores que revisan el proyecto
 - Aumenta el tamaño innecesariamente
 - Puede contener bugs que nadie detecta porque nadie lo ejecuta
+
+## Criterios de verificación
+
+| Criterio | Método | Automatizable |
+|----------|--------|--------------|
+| `mock-data.ts` no existe o está documentado | `ls frontend/src/lib/mock-data.ts` | ✅ Script CI |
+| Si existe, debe tener comentario explícito de propósito | Buscar comentario `// mock-data.ts` o similar | ❌ Revisión manual |
+| No hay otros archivos sin imports | `grep -r "export"` cruzado con imports | ✅ knip/unused-exports |
+| El build no produce warnings de exports no usados | Revisar output de `tsc -b` | ✅ En CI build step |
+
+## Referencias cruzadas
+- **Memory bank**: `current-status.md` brecha B-5
+- **Memory bank**: `current-status.md` fase 2 (Mantenibilidad)
+- **Regla relacionada**: `backend-dry-filters.md` — ambas buscan reducir ruido/deuda técnica
+
+## Nota de gobernanza
+`mock-data.ts` tiene 60+ registros con nombres de empresas ficticias y montos hardcodeados. Si alguien lo usara, crearía una fuente duplicada de verdad. La regla no fuerza eliminarlo si hay un propósito documentado (ej: "datos de referencia para development offline").
 - Genera falsos positivos en análisis de cobertura
 
 ## Cómo verificar que se cumple

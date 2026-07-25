@@ -74,3 +74,20 @@ Mensajes de error específicos:
 - Debe haber al menos 2 `catch` o `try/catch` diferenciando red vs HTTP
 - El mensaje de error debe incluir información accionable
 - Los errores de red deben tener un mensaje distinto a los errores HTTP
+
+## Criterios de verificación
+
+| Criterio | Método | Automatizable |
+|----------|--------|--------------|
+| `fetchFinancialData()` distingue error de red vs HTTP vs JSON | Buscar `try/catch` anidado o `catch` con lógica condicional | ❌ Revisión manual |
+| No hay `.catch(() => ` sin parámetro de error | Buscar `.catch(() =>` en `App.tsx` | ✅ grep |
+| El mensaje de error se muestra al usuario en la UI | El `<div>` condicional en App.tsx se activa con el mensaje específico | ❌ Revisión manual |
+| Los errores se registran en consola para debugging | Buscar `console.error` junto al catch | ✅ grep |
+
+## Referencias cruzadas
+- **Memory bank**: `current-status.md` brecha B-7
+- **Regla relacionada**: `frontend-error-boundaries.md` — ambas forman la capa de resiliencia del FE
+- **Regla relacionada**: `frontend-runtime-validation.md` — validación + errores granulares
+
+## Nota de gobernanza
+El manejo genérico de errores oculta problemas reales. Un error 401 requiere acción diferente a un 500 o un timeout de red. Diferenciarlos permite al usuario tomar la acción correcta y al desarrollador debuggear más rápido. En una aplicación real, estas diferencias también permiten implementar retry lógico (timeout → reintentar, 401 → redirigir a login).

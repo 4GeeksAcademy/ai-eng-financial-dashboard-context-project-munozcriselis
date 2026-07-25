@@ -48,16 +48,22 @@ def get_segment_metrics(
     business_type: BusinessType,
     start_date: date | None = Query(default=None),
     ...
-) -> list[FinancialMovement]:
-    return ensure_chronological_order(
-        get_filtered_movements(business_type=business_type, ...)
-    )
 ```
 
-## Razón
-El principio DRY (Don't Repeat Yourself) reduce errores de mantenimiento. Si cambia la lógica de filtrado, se debe cambiar en un solo lugar. Con duplicación, es fácil olvidar actualizar una copia.
+## Criterios de verificación
 
-## Cómo verificar que se cumple
-- No debe haber más de una función que implemente la lógica de filtrado por `business_type`
-- Los endpoints B2B y B2C deben reutilizar la misma función base
+| Criterio | Método | Automatizable |
+|----------|--------|--------------|
+| No hay `if business_type is not None` repetido en 4+ endpoints | Buscar el patrón en `routes.py` | ✅ grep con `wc -l` |
+| `filter_movements()` acepta `business_type` como parámetro | Buscar `def filter_movements` y verificar firma | ✅ grep |
+| Los endpoints `/api/metrics/b2b` y `/api/metrics/b2c` se mantienen o se depreca con redirect | Decisión arquitectónica | ❌ Revisión manual |
+| Test: el nuevo endpoint unificado funciona igual que los 2 separados | Test parametrizado | ✅ Test unitario |
+
+## Referencias cruzadas
+- **Memory bank**: `current-status.md` brecha B-4
+- **Regla relacionada**: `backend-data-caching.md` — ambas mejoran mantenibilidad del backend
+- **Regla relacionada**: `cleanup-dead-code.md` — eliminar duplicación es pariente de eliminar código muerto
+
+## Nota de gobernanza
+Este patrón de filtrado duplicado es el ejemplo clásico de violación DRY. La solución no es solo extraer función, sino decidir si los endpoints `/b2b` y `/b2c` deben existir como atajos (conveniencia) o si deben deprecarse en favor de `/api/metrics?business_type=B2B`.
 - `business_type` debe manejarse como parámetro, no como lógica duplicada por cada tipo
