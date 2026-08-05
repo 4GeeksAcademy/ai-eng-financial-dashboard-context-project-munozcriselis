@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
 import { KPIRow } from '@/components/dashboard/kpi-row'
-import { IncomeOutcomeChart } from '@/components/dashboard/income-outcome-chart'
-import { ProfitPercentChart } from '@/components/dashboard/profit-percent-chart'
+import { ClientIncomeOutcomeChart } from '@/components/dashboard/client-income-outcome-chart'
+import { ClientProfitPercentChart } from '@/components/dashboard/client-profit-percent-chart'
 import {
   type FinancialMovement,
   type KPIMetrics,
@@ -101,8 +101,8 @@ export default function DashboardClient() {
             <h2 id="charts-section-title" className="sr-only">
               Financial charts
             </h2>
-            <IncomeOutcomeChart data={monthlyData} loading={loading} />
-            <ProfitPercentChart data={monthlyData} loading={loading} />
+            <ClientIncomeOutcomeChart data={monthlyData} loading={loading} />
+            <ClientProfitPercentChart data={monthlyData} loading={loading} />
           </section>
 
           {/* Methodology section - follows KPI dashboard best practices */}
