@@ -29,12 +29,12 @@ function oklchToHex(l, c, h) {
   return rgbToHex(r, g, bVal);
 }
 
-// Colores del theme dark
+// Colores del theme dark (actualizados para coincidir con globals.css/index.css)
 const colors = {
   background: oklchToHex(0.13, 0.01, 240),
   foreground: oklchToHex(0.94, 0.005, 240),
   muted: oklchToHex(0.24, 0.015, 240),
-  mutedForeground: oklchToHex(0.62, 0.01, 240),
+  mutedForeground: oklchToHex(0.68, 0.01, 240),  // Actualizado de 0.62 a 0.68
   card: oklchToHex(0.18, 0.012, 240),
   cardForeground: oklchToHex(0.94, 0.005, 240),
   primary: oklchToHex(0.6, 0.2, 255),
@@ -46,7 +46,17 @@ const colors = {
   outcomeBadge: oklchToHex(0.25, 0.07, 25),
   outcomeBadgeFg: oklchToHex(0.72, 0.16, 27),
   profitBadge: oklchToHex(0.22, 0.05, 255),
-  profitBadgeFg: oklchToHex(0.72, 0.16, 255)
+  profitBadgeFg: oklchToHex(0.72, 0.16, 255),
+  // Light theme colors (actualizados para coincidir con :root)
+  lightBackground: oklchToHex(0.97, 0.005, 240),
+  lightForeground: oklchToHex(0.15, 0.01, 240),
+  lightMutedForeground: oklchToHex(0.42, 0.01, 240),
+  lightIncomeBadge: oklchToHex(0.93, 0.06, 155),
+  lightIncomeBadgeFg: oklchToHex(0.35, 0.12, 155),
+  lightOutcomeBadge: oklchToHex(0.95, 0.06, 25),
+  lightOutcomeBadgeFg: oklchToHex(0.42, 0.15, 27),
+  lightProfitBadge: oklchToHex(0.93, 0.04, 255),
+  lightProfitBadgeFg: oklchToHex(0.38, 0.15, 255),
 };
 
 // Función para calcular luminancia relativa
@@ -127,6 +137,34 @@ chartColors.forEach(chart => {
   console.log(`${chart.name} vs fondo de tarjeta: ${contrast.toFixed(2)}:1`);
   console.log(`  WCAG AA (gráficos): ${contrast >= 3 ? "✅ CUMPLE" : "❌ NO CUMPLE"}`);
 });
+
+console.log("");
+console.log("=== VERIFICACIÓN DE CONTRASTE - THEME LIGHT ===");
+console.log("");
+
+// Light theme: texto principal vs fondo
+const lightContrast1 = getContrastRatio(colors.lightForeground, colors.lightBackground);
+console.log(`Texto principal vs fondo: ${lightContrast1.toFixed(2)}:1`);
+console.log(`  WCAG AA (texto normal): ${lightContrast1 >= 4.5 ? "✅ CUMPLE" : "❌ NO CUMPLE"}`);
+console.log(`  WCAG AA (texto grande): ${lightContrast1 >= 3 ? "✅ CUMPLE" : "❌ NO CUMPLE"}`);
+console.log("");
+
+// Light theme: texto secundario vs fondo
+const lightContrast2 = getContrastRatio(colors.lightMutedForeground, colors.lightBackground);
+console.log(`Texto secundario vs fondo: ${lightContrast2.toFixed(2)}:1`);
+console.log(`  WCAG AA (texto normal): ${lightContrast2 >= 4.5 ? "✅ CUMPLE" : "❌ NO CUMPLE"}`);
+console.log(`  WCAG AA (texto grande): ${lightContrast2 >= 3 ? "✅ CUMPLE" : "❌ NO CUMPLE"}`);
+console.log("");
+
+// Light theme: badges
+const lightContrast3 = getContrastRatio(colors.lightIncomeBadgeFg, colors.lightIncomeBadge);
+console.log(`Badge income (light): ${lightContrast3.toFixed(2)}:1 → ${lightContrast3 >= 4.5 ? "✅ CUMPLE AA" : lightContrast3 >= 3 ? "⚠️ SOLO AA-grande" : "❌ NO CUMPLE"}`);
+
+const lightContrast4 = getContrastRatio(colors.lightOutcomeBadgeFg, colors.lightOutcomeBadge);
+console.log(`Badge outcome (light): ${lightContrast4.toFixed(2)}:1 → ${lightContrast4 >= 4.5 ? "✅ CUMPLE AA" : lightContrast4 >= 3 ? "⚠️ SOLO AA-grande" : "❌ NO CUMPLE"}`);
+
+const lightContrast5 = getContrastRatio(colors.lightProfitBadgeFg, colors.lightProfitBadge);
+console.log(`Badge profit (light): ${lightContrast5.toFixed(2)}:1 → ${lightContrast5 >= 4.5 ? "✅ CUMPLE AA" : lightContrast5 >= 3 ? "⚠️ SOLO AA-grande" : "❌ NO CUMPLE"}`);
 
 console.log("");
 console.log("=== VERIFICACIÓN COMPLETADA ===");
