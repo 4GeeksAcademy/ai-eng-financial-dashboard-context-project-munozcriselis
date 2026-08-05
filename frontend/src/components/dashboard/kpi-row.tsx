@@ -6,9 +6,15 @@ import { TrendingUp, TrendingDown, DollarSign, BarChart2 } from 'lucide-react'
 interface KPIRowProps {
   metrics: KPIMetrics | null
   loading?: boolean
+  trends?: {
+    totalIncome?: number
+    totalOutcome?: number
+    profit?: number
+    profitPercent?: number
+  }
 }
 
-export function KPIRow({ metrics, loading }: KPIRowProps) {
+export function KPIRow({ metrics, loading, trends }: KPIRowProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
       <KPICard
@@ -18,6 +24,7 @@ export function KPIRow({ metrics, loading }: KPIRowProps) {
         icon={TrendingUp}
         variant="income"
         loading={loading}
+        trend={trends?.totalIncome !== undefined ? { value: trends.totalIncome, label: 'vs prev. period' } : undefined}
       />
       <KPICard
         label="Total Outcome"
@@ -26,6 +33,7 @@ export function KPIRow({ metrics, loading }: KPIRowProps) {
         icon={TrendingDown}
         variant="outcome"
         loading={loading}
+        trend={trends?.totalOutcome !== undefined ? { value: trends.totalOutcome, label: 'vs prev. period' } : undefined}
       />
       <KPICard
         label="Profit"
@@ -34,6 +42,7 @@ export function KPIRow({ metrics, loading }: KPIRowProps) {
         icon={DollarSign}
         variant="profit"
         loading={loading}
+        trend={trends?.profit !== undefined ? { value: trends.profit, label: 'vs prev. period' } : undefined}
       />
       <KPICard
         label="Profit Margin"
@@ -42,6 +51,7 @@ export function KPIRow({ metrics, loading }: KPIRowProps) {
         icon={BarChart2}
         variant="profitPercent"
         loading={loading}
+        trend={trends?.profitPercent !== undefined ? { value: trends.profitPercent, label: 'vs prev. period' } : undefined}
       />
     </div>
   )

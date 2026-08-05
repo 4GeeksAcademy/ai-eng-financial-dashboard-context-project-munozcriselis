@@ -25,12 +25,40 @@ function App() {
   const [monthlyData, setMonthlyData] = useState<MonthlyDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [trends, setTrends] = useState<{
+    totalIncome?: number;
+    totalOutcome?: number;
+    profit?: number;
+    profitPercent?: number;
+  }>({});
 
   useEffect(() => {
     fetchFinancialData()
       .then((movements) => {
-        setMetrics(computeKPIs(movements));
+        const computedMetrics = computeKPIs(movements);
+        setMetrics(computedMetrics);
         setMonthlyData(computeMonthlyData(movements));
+        
+        // Calculate trends (compare last month vs previous month)
+        if (monthlyData.length >= 2) {
+          const lastMonth = monthlyData[monthlyData.length - 1];
+          const prevMonth = monthlyData[monthlyData.length - 2];
+          
+          const calculateTrend = (current: number, previous: number) => {
+            if (previous === 0) return 0;
+            return Math.round(((current - previous) / previous) * 100);
+          };
+          
+          setTrends({
+            totalIncome: calculateTrend(lastMonth.income, prevMonth.income),
+            totalOutcome: calculateTrend(lastMonth.outcome, prevMonth.outcome),
+            profit: calculateTrend(
+              lastMonth.income - lastMonth.outcome,
+              prevMonth.income - prevMonth.outcome
+            ),
+            profitPercent: lastMonth.profitPercent - prevMonth.profitPercent,
+          });
+        }
       })
       .catch(() => {
         setError(
@@ -49,21 +77,55 @@ function App() {
           <DashboardHeader period="2024 - Full Year" />
 
           {error ? (
-            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground">
+            <div
+              role="alert"
+              aria-live="assertive"
+              className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground"
+            >
               {error}
             </div>
           ) : null}
 
-          <section aria-label="Key performance indicators">
-            <KPIRow metrics={metrics} loading={loading} />
+          <section aria-labelledby="kpi-section-title">
+            <h2 id="kpi-section-title" className="sr-only">
+              Key performance indicators
+            </h2>
+            <KPIRow metrics={metrics} loading={loading} trends={trends} />
           </section>
 
           <section
-            aria-label="Financial charts"
+            aria-labelledby="charts-section-title"
             className="grid grid-cols-1 gap-4 xl:grid-cols-2"
           >
+            <h2 id="charts-section-title" className="sr-only">
+              Financial charts
+            </h2>
             <IncomeOutcomeChart data={monthlyData} loading={loading} />
             <ProfitPercentChart data={monthlyData} loading={loading} />
+          </section>
+
+          {/* Methodology section - follows KPI dashboard best practices */}
+          <section aria-labelledby="methodology-title" className="mt-8">
+            <h2 id="methodology-title" className="text-sm font-semibold text-muted-foreground mb-3">
+              Methodology
+            </h2>
+            <div className="rounded-lg border border-border/60 bg-card p-4 text-xs text-muted-foreground space-y-2">
+              <p>
+                <strong className="text-foreground">Total Income:</strong> Sum of all positive financial movements (revenue, sales, incoming transfers).
+              </p>
+              <p>
+                <strong className="text-foreground">Total Outcome:</strong> Sum of all negative financial movements (expenses, costs, outgoing transfers).
+              </p>
+              <p>
+                <strong className="text-foreground">Profit:</strong> Calculated as Total Income minus Total Outcome.
+              </p>
+              <p>
+                <strong className="text-foreground">Profit Margin:</strong> Profit divided by Total Income, expressed as a percentage.
+              </p>
+              <p>
+                <strong className="text-foreground">Trends:</strong> Percentage change comparing the most recent month to the previous month.
+              </p>
+            </div>
           </section>
         </div>
       </div>

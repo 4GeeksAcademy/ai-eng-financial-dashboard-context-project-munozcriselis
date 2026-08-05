@@ -70,7 +70,21 @@ Agregar al `package.json` (devDependencies):
 ## Razón
 Los tests de utilidades validan que los cálculos son correctos, pero no validan que la UI refleje esos cálculos. Un cambio en el formato de un componente (ej: cambiar `formatCurrency` por un formateo distinto en el JSX) no sería detectado.
 
-## Cómo verificar que se cumple
-- Cada componente del dashboard debe tener al menos un test
-- Los tests deben cubrir: `loading=true`, estado de error, estado con datos vacíos
-- `npx vitest run` debe ejecutarse sin errores
+## Criterios de verificación
+
+| Criterio | Método | Automatizable |
+|----------|--------|--------------|
+| Existe al menos 1 archivo `*.test.tsx` en `components/dashboard/` | Buscar `*.test.tsx` en `frontend/src/components/` | ✅ glob |
+| Cada componente con loading skeleton tiene test de loading state | Buscar `loading={true}` o `loading` en tests | ✅ grep |
+| Cada componente con empty state tiene test de datos vacíos | Buscar `data={[]}` o similar en tests | ✅ grep |
+| `npx vitest run` pasa con todos los tests | Ejecutar vitest en CI | ✅ Comando CI |
+| Las dependencias de testing (`@testing-library/react`) están en `package.json` | Buscar en `devDependencies` | ✅ jq/grep |
+
+## Referencias cruzadas
+- **Memory bank**: `current-status.md` brecha B-11
+- **Memory bank**: `current-status.md` fase 4 (Testing y polish)
+- **Memory bank**: `product-overview.md` sección 4.2 (0/6 componentes con tests)
+- **Regla relacionada**: `testing-structure-assertions.md` — testing robusto y no frágil
+
+## Nota de gobernanza
+Los tests de componentes son la capa final de verificación: validan que el usuario realmente ve lo que debería ver. Sin ellos, un bug en JSX (ej: usar `income` en vez de `outcome` en un label) pasa desapercibido aunque la lógica de cálculo sea correcta. Para un proyecto educativo, al menos KPICard y los dos charts deberían tener tests básicos.
