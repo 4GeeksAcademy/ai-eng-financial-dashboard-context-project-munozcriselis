@@ -11,17 +11,19 @@
 
 | Technology | Version | Purpose | Evidence |
 |-----------|---------|---------|----------|
+| **Next.js** | ^15.3.3 (App Router) | Framework, dev server and build | `frontend/package.json` → `dependencies`; `frontend/app/` (`layout.tsx`, `page.tsx`, `dashboard-client.tsx`) |
 | **React** | ^19.2.4 | UI component library | `frontend/package.json` → `dependencies` |
 | **TypeScript** | ~6.0.2 | Static typing for JavaScript | `frontend/package.json` → `devDependencies` |
-| **Vite** | ^8.0.4 | Build tool and dev server | `frontend/package.json` → `devDependencies` |
 | **React DOM** | ^19.2.4 | React rendering for the web | `frontend/package.json` → `dependencies` |
+
+> The frontend was migrated from Vite to Next.js during the agent-skills work. Vite files (`vite.config.ts`, `index.html`, `src/main.tsx`, `src/App.tsx`) were removed; the page entry is `frontend/app/dashboard-client.tsx`.
 
 ### 1.2 UI & Styling
 
 | Technology | Version | Purpose | Evidence |
 |-----------|---------|---------|----------|
-| **Tailwind CSS** | ^4.2.2 | Utility-first CSS framework | `frontend/package.json` → `devDependencies`; `frontend/index.css` → `@import "tailwindcss"` |
-| **@tailwindcss/vite** | ^4.2.2 | Tailwind Vite plugin for CSS processing | `frontend/package.json` → `devDependencies`; `frontend/vite.config.ts` → `plugins: [react(), tailwindcss()]` |
+| **Tailwind CSS** | ^4.2.2 | Utility-first CSS framework | `frontend/package.json` → `devDependencies`; `frontend/app/globals.css` → `@import "tailwindcss"` |
+| **@tailwindcss/postcss** | ^4.3.5 | Tailwind processing in Next.js | `frontend/postcss.config.mjs` |
 | **class-variance-authority** | ^0.7.1 | Component variant management for Tailwind | `frontend/package.json` → `dependencies` |
 | **clsx** | ^2.1.1 | Conditional className construction | `frontend/package.json` → `dependencies`; imported in `frontend/src/lib/utils.ts` |
 | **tailwind-merge** | ^3.5.0 | Intelligent Tailwind class merging | `frontend/package.json` → `dependencies`; used in `frontend/src/lib/utils.ts` `cn()` function |
@@ -37,13 +39,9 @@
 
 | Technology | Version | Purpose | Evidence |
 |-----------|---------|---------|----------|
-| **ESLint** | ^9.39.4 | Code linting | `frontend/package.json` → `devDependencies`; `frontend/eslint.config.js` |
-| **@eslint/js** | ^9.39.4 | ESLint core JS rules | `frontend/package.json` → `devDependencies` |
-| **typescript-eslint** | ^8.58.0 | TypeScript linting rules | `frontend/package.json` → `devDependencies` |
-| **eslint-plugin-react-hooks** | ^7.0.1 | React Hooks linting rules | `frontend/package.json` → `devDependencies` |
-| **eslint-plugin-react-refresh** | ^0.5.2 | React Fast Refresh linting rules | `frontend/package.json` → `devDependencies` |
-| **globals** | ^17.4.0 | Global variable definitions for ESLint | `frontend/package.json` → `devDependencies` |
-| **@vitejs/plugin-react** | ^6.0.1 | React Fast Refresh for Vite | `frontend/package.json` → `devDependencies`; `frontend/vite.config.ts` |
+| **ESLint** | ^9.39.4 | Code linting | `frontend/package.json` → `devDependencies`; `frontend/eslint.config.mjs` |
+| **eslint-config-next** | ^15.3.3 | Next.js rules (`next/core-web-vitals`, `next/typescript`) | `frontend/eslint.config.mjs` |
+| **eslint-plugin-react-hooks** | ^5.2.0 | React Hooks rules required by `eslint-config-next` | `frontend/package.json` → `devDependencies` |
 | **@types/react** | ^19.2.14 | TypeScript types for React | `frontend/package.json` → `devDependencies` |
 | **@types/react-dom** | ^19.2.3 | TypeScript types for React DOM | `frontend/package.json` → `devDependencies` |
 | **@types/node** | ^24.12.2 | TypeScript types for Node.js APIs | `frontend/package.json` → `devDependencies` |
@@ -52,19 +50,17 @@
 
 | Technology | Version | Purpose | Evidence |
 |-----------|---------|---------|----------|
-| **Vitest** | ^4.1.4 | Unit test runner (Vite-native) | `frontend/package.json` → `devDependencies`; scripts: `"test": "vitest run"` |
-| **@vitest/coverage-v8** | ^4.1.4 | Code coverage via V8 | `frontend/package.json` → `devDependencies`; script: `"test:coverage"` |
+| **Vitest** | ^3.2.7 | Unit test runner | `frontend/package.json` → `devDependencies`; script `"test": "vitest run"`; `frontend/src/lib/financial-utils.test.ts` (5 tests) |
 
 ### 1.6 TypeScript Configuration
 
 | Setting | Value | Evidence |
 |---------|-------|----------|
-| Target | ES2023 | `tsconfig.app.json` → `target: "es2023"` |
-| JSX | react-jsx | `tsconfig.app.json` → `jsx: "react-jsx"` |
-| Module | esnext | `tsconfig.app.json` → `module: "esnext"` |
-| Module resolution | bundler | `tsconfig.app.json` → `moduleResolution: "bundler"` |
-| Path alias | `@/` → `./src/*` | `tsconfig.app.json` → `paths`; `vite.config.ts` → `resolve.alias` |
-| Strict checks | `noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax`, `noFallthroughCasesInSwitch` | `tsconfig.app.json` → Linting section |
+| Target | ES2017 | `tsconfig.json` → `target` |
+| JSX | preserve (compiled by Next.js) | `tsconfig.json` → `jsx` |
+| Module resolution | bundler | `tsconfig.json` → `moduleResolution` |
+| Strict mode | `strict: true` | `tsconfig.json` |
+| Path alias | `@/` → `./src/*` | `tsconfig.json` → `paths` |
 
 ---
 
@@ -144,8 +140,8 @@ backend/
 
 | Component | Detail | Evidence |
 |-----------|--------|----------|
-| Internal DNS | Docker Compose service names (`backend`, `frontend`) | `vite.config.ts` → proxy target `http://backend:8000` |
-| Frontend proxy | Vite proxies `/api/*` → `http://backend:8000` | `vite.config.ts:10-14` |
+| Internal DNS | Docker Compose service names (`backend`, `frontend`) | `next.config.ts` → default proxy target `http://backend:8000` |
+| Frontend proxy | Next.js rewrite `/api/*` → `API_PROXY_TARGET` (default `http://backend:8000`; outside Docker use `http://localhost:8000`). Rewrites are resolved at build time for `next build` | `frontend/next.config.ts`, `frontend/.env.example` |
 | CORS | Backend allows all origins (`allow_origins=["*"]`) | `app/main.py:9` |
 | Container dependency | Frontend `depends_on: backend` | `docker-compose.yml:11` |
 
@@ -154,11 +150,11 @@ backend/
 | Context | Script | Command | Evidence |
 |---------|--------|---------|----------|
 | **Root** | Start all services | `docker compose up --build` | `README.md` |
-| **Frontend** | Dev server | `npm run dev` | `frontend/package.json` |
-| **Frontend** | TypeScript build | `tsc -b && vite build` | `frontend/package.json` → `build` |
-| **Frontend** | Lint | `eslint .` | `frontend/package.json` → `lint` |
-| **Frontend** | Run tests | `vitest run` | `frontend/package.json` → `test` |
-| **Frontend** | Coverage | `vitest run --coverage` | `frontend/package.json` → `test:coverage` |
+| **Frontend** | Dev server (port 5173) | `npm run dev` → `next dev -p 5173` | `frontend/package.json` |
+| **Frontend** | Production build (type check + lint) | `npm run build` → `next build` | `frontend/package.json` → `build` |
+| **Frontend** | Production server (port 5173) | `npm run start` → `next start -p 5173` | `frontend/package.json` → `start` |
+| **Frontend** | Lint | `npm run lint` → `next lint` | `frontend/package.json` → `lint` |
+| **Frontend** | Run tests | `npm test` → `vitest run` | `frontend/package.json` → `test` |
 | **Backend** | Run tests | `pytest` | Expected via `backend/requirements.txt` (no script in Dockerfile) |
 | **Backend** | Start server | `python -m debugpy --listen 0.0.0.0:5678 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload` | `backend/Dockerfile` → CMD |
 
@@ -172,17 +168,16 @@ backend/
 ├──────────────────────┬──────────────────────────────┤
 │    Frontend (:5173)   │        Backend (:8000)       │
 │                       │                              │
-│  React 19             │  FastAPI                     │
+│  Next.js 15 + React 19│  FastAPI                     │
 │  TypeScript 6         │  Python 3.13                 │
-│  Vite 8               │  Uvicorn                     │
-│  Tailwind CSS 4       │  Pydantic                    │
-│  Recharts 3           │  debugpy                     │
-│  Lucide React 1       │                              │
-│  Vitest 4             │  pytest + httpx              │
+│  Tailwind CSS 4       │  Uvicorn                     │
+│  Recharts 3           │  Pydantic                    │
+│  Lucide React 1       │  debugpy                     │
+│  Vitest 3             │  pytest + httpx              │
 │                       │                              │
 └──────────────────────┴──────────────────────────────┘
          │                         │
-         └──── Vite Proxy ─────────┘
+         └──── Next.js rewrite ────┘
               /api → backend:8000
 ```
 

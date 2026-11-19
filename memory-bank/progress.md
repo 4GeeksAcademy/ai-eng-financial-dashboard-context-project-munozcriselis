@@ -31,7 +31,11 @@
 
 **Source:** `vercel-labs/agent-skills@vercel-react-best-practices`
 
-**Status:** Reviewed, no new changes needed (existing patterns already follow guidelines).
+**Status:** Applied (follow-up session, see "Session 2026-11-19" below). The first review found no issues; a second audit of `frontend/app/dashboard-client.tsx` found two rule violations:
+- `rerender-derived-state-no-effect`: KPIs, monthly data and trends were copied into state inside the fetch effect. Now only the fetched movements are state; the rest is derived with `useMemo`.
+- `js-cache-function-results`: `computeMonthlyData` ran twice per load. Now it is computed once and reused by charts and trends.
+
+Already compliant from the Next.js migration: `next/font` (`Inter` in `app/layout.tsx`), page metadata (`app/layout.tsx`, `app/page.tsx`) and Recharts loaded with `next/dynamic` + `ssr: false` to avoid hydration errors.
 
 ---
 
@@ -49,8 +53,7 @@
 **Files Modified:**
 - `frontend/src/components/dashboard/kpi-card.tsx` — trend UI
 - `frontend/src/components/dashboard/kpi-row.tsx` — trend props
-- `frontend/src/App.tsx` — trend calculations + methodology section
-- `frontend/app/dashboard-client.tsx` — same for Next.js version
+- `frontend/app/dashboard-client.tsx` — trend calculations + methodology section (`frontend/src/App.tsx` was the Vite version, removed in the follow-up session)
 
 ---
 
@@ -69,8 +72,8 @@ No existing skill covered:
 
 **Skill Location:**
 ```
-.agents/skills/financial-data-formatting/
-├── SKILL.md
+.skills/financial-data-formatting/   (moved from .agents/skills/ on 2026-11-19)
+├── SKILL.md                          (goal, inputs, expected output, acceptance criteria)
 └── references/
     └── details.md
 ```
@@ -101,14 +104,29 @@ No existing skill covered:
 | Skill | Source | Type | Status |
 |-------|--------|------|--------|
 | accessibility | addyosmani/web-quality-skills | External | ✅ Installed |
-| vercel-react-best-practices | vercel-labs/agent-skills | External | ✅ Installed |
-| kpi-dashboard-design | wshobson/agents | External | ✅ Installed |
-| financial-data-formatting | Local | Custom | ✅ Created |
+| vercel-react-best-practices | vercel-labs/agent-skills | External | ✅ Applied |
+| kpi-dashboard-design | wshobson/agents | External | ✅ Applied |
+| financial-data-formatting | Local (`.skills/`) | Custom | ✅ Created and applied |
+
+---
+
+## Session 2026-11-19 — Fixes after the Next.js migration
+
+Verified with `npm run build`, `npm run lint`, `npm test` (5/5) and the running app (`next start` + backend on :8000).
+
+| Change | Why | Commit topic |
+|--------|-----|--------------|
+| Stop tracking `frontend/.next/` | Build artifacts were committed | `chore` |
+| Remove Vite leftovers, add `/api` rewrite, port 5173, `vitest`, `eslint-plugin-react-hooks` | `next build` failed (type error in `vite.config.ts`); the app had no `/api` proxy and listened on 3000 instead of 5173 | `fix(frontend)` |
+| Derived state with `useMemo` | Skill `vercel-react-best-practices` (see section 2) | `refactor(dashboard)` |
+| Round the Profit Margin trend | Skill `financial-data-formatting` §5: it rendered `+56.982554561065086%` | `fix(dashboard)` |
+| Move the internal skill to `.skills/` and add Inputs / Expected output | Project brief requires `.skills/` | `chore(skills)` |
+| Add `@tailwindcss/postcss` + `postcss.config.mjs` | Tailwind was not processed by Next.js; the dashboard rendered unstyled | `fix(frontend)` |
 
 ---
 
 ## Next Steps
 
-- [ ] Run `npm run build` to verify no regressions
-- [ ] Apply `financial-data-formatting` skill to audit existing formatters
 - [ ] Consider adding `data-visualization` skill for chart improvements
+- [ ] Update `current-status.md` and `product-overview.md` file references (`App.tsx` → `app/dashboard-client.tsx`)
+- [ ] Consolidate `context.md` into the memory-bank (reviewer feedback on the context project)
