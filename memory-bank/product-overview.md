@@ -36,8 +36,8 @@
 | 2 | **Income vs Outcome line chart** over time | `income-outcome-chart.tsx` using Recharts `LineChart` with two lines |
 | 3 | **Profit percentage line chart** over time | `profit-percent-chart.tsx` using Recharts `LineChart` with zero reference line |
 | 4 | **Loading skeleton states** while fetching | `kpi-card.tsx`, `income-outcome-chart.tsx`, `profit-percent-chart.tsx` — all render `<Skeleton>` when `loading=true` |
-| 5 | **Error banner** on API failure | `App.tsx:49-51` — renders a red error `<div>` when fetch fails |
-| 6 | **Responsive grid layout** (1 col → 2 col → 4 col) | `App.tsx` — `grid-cols-1 xl:grid-cols-2` for charts; `kpi-row.tsx` — `sm:grid-cols-2 xl:grid-cols-4` |
+| 5 | **Error banner** on API failure | `app/dashboard-client.tsx:88-96` — renders a red error `<div role="alert">` when fetch fails |
+| 6 | **Responsive grid layout** (1 col → 2 col → 4 col) | `app/dashboard-client.tsx:107` — `grid-cols-1 xl:grid-cols-2` for charts; `kpi-row.tsx` — `sm:grid-cols-2 xl:grid-cols-4` |
 | 7 | **Dark theme** with custom CSS variables | `index.css` — `dark` variant via `@custom-variant dark (&:is(.dark *))` with OKLCH color tokens |
 | 8 | **Custom tooltip** for chart interaction | `income-outcome-chart.tsx:31-47` and `profit-percent-chart.tsx:30-49` — `<CustomTooltip>` components |
 
@@ -53,8 +53,8 @@
 |---|---------|----------|
 | 1 | **Docker Compose orchestration** (2 services) | `docker-compose.yml` — frontend (port 5173) + backend (ports 8000, 5678) |
 | 2 | **Hot-reload development** via volume mounts | `docker-compose.yml` — volume mounts for both services |
-| 3 | **Vite proxy** for `/api` requests | `vite.config.ts:10-14` — proxies `/api` → `http://backend:8000` |
-| 4 | **TypeScript strict mode** | `tsconfig.app.json` — `noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax` enabled |
+| 3 | **Next.js rewrite** for `/api` requests | `frontend/next.config.ts` — proxies `/api/*` → `API_PROXY_TARGET` (default `http://backend:8000`) |
+| 4 | **TypeScript strict mode** | `tsconfig.json` — `strict: true` |
 
 ---
 
@@ -74,12 +74,12 @@
 ```
 ┌──────────────┐     GET /api/metrics     ┌──────────────────┐
 │   Frontend    │ ←─────────────────────  │    Backend API    │
-│  (React 19)   │                         │   (FastAPI)       │
+│  (Next.js 15) │                         │   (FastAPI)       │
 │  :5173        │                         │   :8000           │
 │              │ ──────────────────────→ │                  │
 └──────────────┘    JSON response         └──────────────────┘
        │                                        │
-       │ Vite Proxy (/api → backend:8000)       │ generate_mock_movements(seed=42)
+       │ Next rewrite (/api → backend:8000)     │ generate_mock_movements(seed=42)
        │                                        │
        ▼                                        ▼
   ┌──────────────┐                    ┌──────────────────┐

@@ -122,11 +122,19 @@ Verified with `npm run build`, `npm run lint`, `npm test` (5/5) and the running 
 | Round the Profit Margin trend | Skill `financial-data-formatting` §5: it rendered `+56.982554561065086%` | `fix(dashboard)` |
 | Move the internal skill to `.skills/` and add Inputs / Expected output | Project brief requires `.skills/` | `chore(skills)` |
 | Add `@tailwindcss/postcss` + `postcss.config.mjs` | Tailwind was not processed by Next.js; the dashboard rendered unstyled | `fix(frontend)` |
+| Chart `title`/`desc` instead of a `role="img"` wrapper | Skill `accessibility`: the focusable chart SVGs (`role="application"`) had no accessible name | `fix(a11y)` |
+| Update file references in `current-status.md` / `product-overview.md`; document `npx skills find` in `skill-justification.md` | Memory bank still pointed to removed Vite files | `docs(memory-bank)` |
+
+### Accessibility check (running app, 2026-11-19)
+- Keyboard: `Tab` reaches both charts with a visible `:focus-visible` outline; arrow keys move between months (Recharts accessibility layer).
+- ARIA: all 13 SVGs are either `aria-hidden` (decorative icons) or named charts; landmarks, `lang="en"` and a single `h1`.
+- `alt`: the page renders no `<img>`; icons are decorative SVGs with `aria-hidden`.
+- Contrast: `node frontend/check-contrast.js` passes WCAG AA in light and dark themes.
 
 ---
 
 ## Next Steps
 
 - [ ] Consider adding `data-visualization` skill for chart improvements
-- [ ] Update `current-status.md` and `product-overview.md` file references (`App.tsx` → `app/dashboard-client.tsx`)
+- [x] Update `current-status.md` and `product-overview.md` file references (`App.tsx` → `app/dashboard-client.tsx`)
 - [ ] Consolidate `context.md` into the memory-bank (reviewer feedback on the context project)
