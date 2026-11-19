@@ -45,7 +45,8 @@ function computeTrends(monthlyData: MonthlyDataPoint[]): Trends {
       lastMonth.income - lastMonth.outcome,
       prevMonth.income - prevMonth.outcome
     ),
-    profitPercent: lastMonth.profitPercent - prevMonth.profitPercent,
+    // financial-data-formatting §5: trends are shown as whole percentages
+    profitPercent: Math.round(lastMonth.profitPercent - prevMonth.profitPercent),
   }
 }
 
