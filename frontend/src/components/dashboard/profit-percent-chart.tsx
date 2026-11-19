@@ -77,9 +77,16 @@ export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
             No data available to display
           </div>
         ) : (
-          <div role="img" aria-label="Line chart showing monthly profit margin percentage trend.">
+          <div>
             <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+              {/* The chart SVG is focusable (role="application"), so it needs its own
+                  accessible name: Recharts renders title/desc inside the SVG. */}
+              <LineChart
+                data={data}
+                margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+                title="Profit Margin %"
+                desc="Line chart showing the monthly profit margin percentage. Use the arrow keys to move between months."
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
                 <XAxis
                   dataKey="month"
