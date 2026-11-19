@@ -42,8 +42,8 @@ _Financial metrics dashboard with a React + TypeScript frontend and a FastAPI ba
 docker compose up --build
 ```
 
-The frontend uses the Vite proxy for `/api` by default, so no extra environment variables are required in local development or Codespaces.
-If you need to target a different backend origin, copy `frontend/.env.example` to `.env` and set `VITE_API_BASE_URL`.
+The frontend (Next.js) proxies `/api` to the backend through a rewrite in `frontend/next.config.ts`, so no extra environment variables are required with Docker Compose or Codespaces.
+If you run the frontend outside Docker or need a different backend, copy `frontend/.env.example` to `frontend/.env` and set `API_PROXY_TARGET` (for example `http://localhost:8000`).
 
 - Frontend: http://localhost:5173
 - Backend: http://localhost:8000

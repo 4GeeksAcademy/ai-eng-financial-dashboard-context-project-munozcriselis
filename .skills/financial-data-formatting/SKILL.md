@@ -20,6 +20,19 @@ the financial dashboard follows consistent, accessible, and locale-aware formatt
 rules. No other installed skill (`accessibility`, `kpi-dashboard-design`,
 `vercel-react-best-practices`) covers these data-layer conventions.
 
+## Inputs
+
+- The file(s) to audit or change: components in `frontend/src/components/dashboard/`,
+  `frontend/app/dashboard-client.tsx` and helpers in `frontend/src/lib/financial-utils.ts`.
+- The values they render: `KPIMetrics`, `MonthlyDataPoint[]` and trend values
+  (types in `frontend/src/lib/financial-types.ts`).
+
+## Expected output
+
+- A list of violations, each with `file:line`, the rule it breaks (sections 1–7) and the fix.
+- The applied fixes, verified with `npm run lint`, `npm run build` and `npm test`
+  in `frontend/`, and by checking the rendered values in the running dashboard.
+
 ---
 
 ## 1. Currency Formatting

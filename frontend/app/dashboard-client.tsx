@@ -1,13 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
 import { KPIRow } from '@/components/dashboard/kpi-row'
 import { ClientIncomeOutcomeChart } from '@/components/dashboard/client-income-outcome-chart'
 import { ClientProfitPercentChart } from '@/components/dashboard/client-profit-percent-chart'
 import {
   type FinancialMovement,
-  type KPIMetrics,
   type MonthlyDataPoint,
 } from '@/lib/financial-types'
 import { computeKPIs, computeMonthlyData } from '@/lib/financial-utils'
@@ -22,47 +21,56 @@ async function fetchFinancialData(): Promise<FinancialMovement[]> {
   return response.json()
 }
 
+type Trends = {
+  totalIncome?: number
+  totalOutcome?: number
+  profit?: number
+  profitPercent?: number
+}
+
+function calculateTrend(current: number, previous: number): number {
+  if (previous === 0) return 0
+  return Math.round(((current - previous) / previous) * 100)
+}
+
+// Compare the last month against the previous one.
+function computeTrends(monthlyData: MonthlyDataPoint[]): Trends {
+  if (monthlyData.length < 2) return {}
+  const lastMonth = monthlyData[monthlyData.length - 1]
+  const prevMonth = monthlyData[monthlyData.length - 2]
+  return {
+    totalIncome: calculateTrend(lastMonth.income, prevMonth.income),
+    totalOutcome: calculateTrend(lastMonth.outcome, prevMonth.outcome),
+    profit: calculateTrend(
+      lastMonth.income - lastMonth.outcome,
+      prevMonth.income - prevMonth.outcome
+    ),
+    // financial-data-formatting §5: trends are shown as whole percentages
+    profitPercent: Math.round(lastMonth.profitPercent - prevMonth.profitPercent),
+  }
+}
+
 export default function DashboardClient() {
-  const [metrics, setMetrics] = useState<KPIMetrics | null>(null)
-  const [monthlyData, setMonthlyData] = useState<MonthlyDataPoint[]>([])
+  // Only the fetched movements live in state; everything else is derived
+  // (vercel-react-best-practices: rerender-derived-state-no-effect).
+  const [movements, setMovements] = useState<FinancialMovement[] | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [trends, setTrends] = useState<{
-    totalIncome?: number
-    totalOutcome?: number
-    profit?: number
-    profitPercent?: number
-  }>({})
+
+  const metrics = useMemo(
+    () => (movements ? computeKPIs(movements) : null),
+    [movements]
+  )
+  // Computed once and reused by charts and trends (js-cache-function-results).
+  const monthlyData = useMemo(
+    () => (movements ? computeMonthlyData(movements) : []),
+    [movements]
+  )
+  const trends = useMemo(() => computeTrends(monthlyData), [monthlyData])
 
   useEffect(() => {
     fetchFinancialData()
-      .then((movements) => {
-        const computedMetrics = computeKPIs(movements)
-        setMetrics(computedMetrics)
-        setMonthlyData(computeMonthlyData(movements))
-        
-        // Calculate trends (compare last month vs previous month)
-        const computedMonthlyData = computeMonthlyData(movements)
-        if (computedMonthlyData.length >= 2) {
-          const lastMonth = computedMonthlyData[computedMonthlyData.length - 1]
-          const prevMonth = computedMonthlyData[computedMonthlyData.length - 2]
-          
-          const calculateTrend = (current: number, previous: number) => {
-            if (previous === 0) return 0
-            return Math.round(((current - previous) / previous) * 100)
-          }
-          
-          setTrends({
-            totalIncome: calculateTrend(lastMonth.income, prevMonth.income),
-            totalOutcome: calculateTrend(lastMonth.outcome, prevMonth.outcome),
-            profit: calculateTrend(
-              lastMonth.income - lastMonth.outcome,
-              prevMonth.income - prevMonth.outcome
-            ),
-            profitPercent: lastMonth.profitPercent - prevMonth.profitPercent,
-          })
-        }
-      })
+      .then(setMovements)
       .catch(() => {
         setError('No se pudo cargar la información financiera. Revisa la API de backend.')
       })

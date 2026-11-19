@@ -2,7 +2,19 @@
 
 ## Date: 2026-08-05
 
-## Skills Explored
+## Discovery method
+
+Skills were discovered with the skills CLI (`npx skills find <topic>`); each result links to its page on skills.sh and is installed with `npx skills add <owner/repo@skill>`.
+
+Re-run on 2026-11-19 to keep evidence in the repo (results and install counts change over time):
+
+| Command | Relevant results |
+|---------|------------------|
+| `npx skills find kpi` | `wshobson/agents@kpi-dashboard-design` (17.8K installs) ← selected skill, `mbfinotti/revops-skills@revenue-kpi-framework` (27.7K) |
+| `npx skills find dashboard` | `firecrawl/firecrawl-workflows@firecrawl-dashboard-reporting` (32K), `anthropics/knowledge-work-plugins@build-dashboard` (9.7K) |
+| `npx skills find performance` | `addyosmani/web-quality-skills@performance` (45.4K), `convex/agent-skills@convex-performance-audit` (94.3K) |
+
+## Skills Explored (original session, 2026-08-05)
 
 ### 1. Performance Skills
 - `get-convex/agent-skills@convex-performance-audit` (94.3K installs)

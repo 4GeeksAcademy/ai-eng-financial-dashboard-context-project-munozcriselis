@@ -22,7 +22,7 @@
     "financial-data-formatting": {
       "source": "local",
       "sourceType": "local",
-      "skillPath": ".agents/skills/financial-data-formatting/SKILL.md",
+      "skillPath": ".skills/financial-data-formatting/SKILL.md",
       "computedHash": "local-1.0"
     }
   }

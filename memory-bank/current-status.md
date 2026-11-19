@@ -24,15 +24,15 @@
 | **4 KPI cards on dashboard** | ✅ Complete | `<KPIRow>` renders 4 `<KPICard>` (Income, Outcome, Profit, Profit%) |
 | **Two financial charts** | ✅ Complete | `<IncomeOutcomeChart>` + `<ProfitPercentChart>` using Recharts |
 | **Loading skeletons** | ✅ Complete | All data-dependent components render `<Skeleton>` while `loading=true` |
-| **Error banner** | ✅ Complete | `App.tsx:49-51` displays error on fetch failure |
+| **Error banner** | ✅ Complete | `app/dashboard-client.tsx:88-96` displays error (`role="alert"`) on fetch failure |
 | **Responsive layout** | ✅ Complete | Tailwind breakpoints handle mobile → desktop |
 | **Dark theme** | ✅ Complete | `index.css` with `@custom-variant dark` and CSS variables |
 | **Frontend unit tests** | ✅ Complete | `financial-utils.test.ts` covers all utility functions |
 | **Backend integration tests** | ✅ Complete | 14 test functions covering all endpoints |
 | **Docker Compose orchestration** | ✅ Complete | Two services with hot-reload volume mounts |
-| **Vite proxy configuration** | ✅ Complete | `/api` proxy → `http://backend:8000` |
+| **API proxy (Next.js rewrite)** | ✅ Complete | `next.config.ts` → `/api/*` → `API_PROXY_TARGET` (default `http://backend:8000`) |
 | **TypeScript strict mode** | ✅ Complete | `noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax` |
-| **ESLint with React + TS rules** | ✅ Complete | `eslint.config.js` with 4 plugin configurations |
+| **ESLint with React + TS rules** | ✅ Complete | `eslint.config.mjs` with `next/core-web-vitals` + `next/typescript` |
 
 ### 1.2 ⚠️ Partial / Questionable
 
@@ -41,7 +41,7 @@
 | **Mock data caching** | ⚠️ Missing | `generate_mock_movements(seed=42)` runs on **every request** (9× per page load) — no caching |
 | **Production security** | ⚠️ Missing | CORS `allow_origins=["*"]` + debugpy always enabled in Dockerfile |
 | **API period dynamic** | ⚠️ Hardcoded | `DashboardHeader` shows `"2024 - Full Year"` — should derive from API response |
-| **Error granularity** | ⚠️ Generic | `App.tsx:46-47` — single catch swallows network/HTTP/JSON errors without differentiation |
+| **Error granularity** | ⚠️ Generic | `app/dashboard-client.tsx:74-76` — single catch swallows network/HTTP/JSON errors without differentiation |
 
 ---
 
@@ -55,15 +55,15 @@
 | 2 | **Debugpy in production image** | Security: debugger port exposed | `Dockerfile` CMD always runs `debugpy --listen 0.0.0.0:5678` | Conditional debug mode via env var |
 | 3 | **No mock data caching** | Performance: regenerates 360 records per request (9× per page load) | `routes.py:183-205` — calls `generate_mock_movements(seed=42)` at start of every endpoint | Cache in module-level variable, invalidate on demand |
 | 4 | **Duplicate B2B/B2C filter logic** | Maintenance: 4 endpoints repeat the same `if business_type is not None` pattern | `routes.py:226, 249, 318, 347` — identical filtering code | Add `business_type` param to `filter_movements()` |
-| 5 | **No runtime API response validation** | Reliability: frontend assumes API shape without runtime checks | `App.tsx:38-42` — `response.json()` cast directly to `FinancialMovement[]` | Use Zod or manual structural validation |
+| 5 | **No runtime API response validation** | Reliability: frontend assumes API shape without runtime checks | `app/dashboard-client.tsx:16-22` — `response.json()` cast directly to `FinancialMovement[]` | Use Zod or manual structural validation |
 
 ### 2.2 🟡 Medium Priority
 
 | # | Gap | Impact | Evidence | Suggested Fix |
 |---|-----|--------|----------|---------------|
-| 6 | **Hardcoded period** | UX: dashboard always shows "2024 - Full Year" regardless of actual data | `App.tsx:47` — `period="2024 - Full Year"` | Derive from `/api/metrics/facets` |
-| 7 | **No Error Boundaries** | UX: a render crash takes down the whole dashboard | `App.tsx` — no `<ErrorBoundary>` wrapper | Wrap with React Error Boundary |
-| 8 | **Undifferentiated error handling** | DX: network, HTTP, and JSON errors all show same message | `App.tsx:44-48` — generic catch | Differentiate by error type |
+| 6 | **Hardcoded period** | UX: dashboard always shows "2024 - Full Year" regardless of actual data | `app/dashboard-client.tsx:86` — `period="2024 - Full Year"` | Derive from `/api/metrics/facets` |
+| 7 | **No Error Boundaries** | UX: a render crash takes down the whole dashboard | `app/dashboard-client.tsx` — no `<ErrorBoundary>` wrapper | Wrap with React Error Boundary |
+| 8 | **Undifferentiated error handling** | DX: network, HTTP, and JSON errors all show same message | `app/dashboard-client.tsx:74-76` — generic catch | Differentiate by error type |
 | 9 | **Dead code: `mock-data.ts`** | Maintenance: 60+ hardcoded records, never imported | `mock-data.ts` — no imports found in any file | Remove or document as reference |
 | 10 | **Hardcoded expected count in test** | Fragility: `assert len(movements) == 360` breaks if mock parameters change | `test_routes.py:10` | Assert structure/properties, not exact count |
 
@@ -72,7 +72,7 @@
 | # | Gap | Impact | Evidence | Suggested Fix |
 |---|-----|--------|----------|---------------|
 | 11 | **No component render tests** | Coverage gap: dashboard components untested | No `.test.tsx` files exist for components | Add Vitest + React Testing Library tests for KPICard, charts, error states |
-| 12 | **Generic HTML `<title>`** | SEO/UX: `<title>frontend</title>` not descriptive | `index.html:6` | Set to "Financial Metrics Dashboard" |
+| 12 | ~~**Generic HTML `<title>`**~~ ✅ Resolved | Title and description now come from Next.js metadata | `app/layout.tsx`, `app/page.tsx` → `metadata` | — |
 | 13 | **No `.env.example` for backend** | DX: no documentation of expected config vars | No `.env.example` in `backend/` | Create `.env.example` with `ALLOWED_ORIGINS`, `DEBUG` |
 | 14 | **No API versioning** | Evolution: `/api/metrics` could break existing consumers | Routes use `/api/metrics/*` without version prefix | Consider `/api/v1/metrics/*` |
 | 15 | **No pagination on `/api/metrics`** | Scale: endpoint returns all 360 records at once | `routes.py:183` — no `skip`/`limit` params | Add pagination for large datasets |
